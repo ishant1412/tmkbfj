@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cursor Trail Typing</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: black;
+      overflow: hidden;
+      cursor: none;
+    }
+
+   .char {
+  position: absolute;
+  color: white;
+  font-family: 'Segoe UI', 'Arial Black', sans-serif; /* Stronger fonts */
+  font-size: 70px;
+  font-weight: 900; /* Extra bold */
+  pointer-events: none;
+  opacity: 10;
+  animation: fadeOut 3s forwards;
+  filter: drop-shadow(0 0 1px white); /* Sharp glow instead of blur */
+}
+
+
+   @keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-5px) scale(1.05);
+  }
+}
+
+  </style>
+</head>
+<body>
+  <audio id="typingSound" src="tmkbfj.MP3" preload="auto"></audio>
+
+  <script>
+    const string = "Are Teri Maa Ka BHOSDA Fat JAGA ";
+    const audio = document.getElementById('typingSound');
+
+    let charIndex = 0;
+    let isMoving = false;
+    let lastMove = Date.now();
+    let lastCharTime = 0;
+    const delay = 75; // time between characters (ms)
+
+    function showCharAt(x, y) {
+      const char = document.createElement('span');
+      char.textContent = string[charIndex % string.length];
+      char.className = 'char';
+      char.style.left = `${x}px`;
+      char.style.top = `${y}px`;
+      document.body.appendChild(char);
+      charIndex++;
+
+      setTimeout(() => {
+        char.remove();
+      }, 1000);
+    }
+
+    document.addEventListener('mousemove', (e) => {
+      const now = Date.now();
+      lastMove = now;
+
+      if (!isMoving) {
+        isMoving = true;
+        charIndex = 0;
+        audio.currentTime = 0;
+        audio.play();
+        audio.addEventListener('ended', () => {
+  if (isMoving) {
+    audio.currentTime = 0;
+    audio.play();
+  }
+});
+
+      }
+
+      // Only add a new character if delay has passed
+      if (now - lastCharTime >= delay) {
+        showCharAt(e.clientX, e.clientY);
+        lastCharTime = now;
+      }
+    });
+
+    setInterval(() => {
+      if (Date.now() - lastMove > 200) {
+        isMoving = false;
+        audio.pause();
+        audio.currentTime = 0;
+        charIndex = 0;
+      }
+    }, 100);
+  </script>
+</body>
+</html>
